@@ -12,26 +12,26 @@ object Example01 extends ZIOAppDefault {
   )
 
   given Validator[User, User] = {
-    val usernameValidator: Validator[User, String] = labeled("username") {
-      id << all(
+    val usernameValidator: Validator[User, Unit] = labeled("username") {
+      allDiscard(
         notBlank,
         minLength(3),
         maxLength(20, inclusive = false),
       )
     }.contraMap(_.username)
 
-    val passwordValidator: Validator[User, String] = labeled("password") {
-      id << all(
-        notBlank,
+    val passwordValidator: Validator[User, Unit] = labeled("password") {
+      allDiscard(
         minLength(8),
         regExr("[a-z]", "must contain a lowercase character"),
         regExr("[A-Z]", "must contain an uppercase character"),
         regExr("[0-9]", "must contain a digit"),
+        regExr("^\\S*$", "must not contain a whitespace character"),
       )
     }.contraMap(_.password)
 
-    val ageValidator: Validator[User, Int] = labeled("age") {
-      id << all(
+    val ageValidator: Validator[User, Unit] = labeled("age") {
+      allDiscard(
         min(18),
         max(100, inclusive = false),
       )

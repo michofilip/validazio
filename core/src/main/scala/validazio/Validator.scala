@@ -26,9 +26,7 @@ object Validator {
   case class Label(label: String)
 
   def labeled[In, Out](label: String)(validator: Label ?=> Validator[In, Out]): Validator[In, Out] = {
-    given Label = Label(label)
-
-    validator
+    validator(using Label(label))
   }
 
   def id[T]: Validator[T, T] =
