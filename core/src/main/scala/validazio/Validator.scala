@@ -94,6 +94,9 @@ object Validator {
   def all[In, Out](validators: Validator[In, Out]*): Validator[In, List[Out]] =
     ValidateAll(validators.toList)
 
+  def allDiscard[In](validators: Validator[In, ?]*): Validator[In, Unit] =
+    ValidateAll(validators.toList.map(_.unit)).unit
+
   def valid[In, Out](using Validator[In, Out]): Validator[In, Out] =
     summon[Validator[In, Out]]
 

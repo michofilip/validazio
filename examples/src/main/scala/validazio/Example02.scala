@@ -1,58 +1,53 @@
 package validazio
 
-import validazio.Example01.{Foo, FooValid}
 import validazio.Validator
 import validazio.Validator.*
 import zio.*
 
 object Example02 extends ZIOAppDefault {
 
-  case class Bar(
-      field1: Option[Foo] = None,
-      field2: Option[Foo] = None,
-      field3: Option[List[Foo]] = None,
+  case class Foo(
+      field1: Option[String] = None,
+      field2: Option[String] = None,
+      field3: Option[String] = None,
   )
 
-  case class BarValid(
-      field1: FooValid,
-      field2: Option[FooValid],
-      field3: List[FooValid],
+  case class FooValid(
+      field1: String,
+      field2: String,
+      field3: Option[String],
   )
 
-  given Validator[Bar, BarValid] = {
-    val field1Validator: Validator[Bar, FooValid] = labeled("field1") {
-      required >> valid[Foo, FooValid]
-    }.contraMap[Bar](_.field1)
+  given Validator[Foo, FooValid] = {
+    val field1Validator: Validator[Foo, String] = labeled("field1") {
+      required << minLength(3)
+    }.contraMap[Foo](_.field1)
 
-    val field2Validator: Validator[Bar, Option[FooValid]] = labeled("field2") {
-      valid[Foo, FooValid].optional
-    }.contraMap[Bar](_.field2)
+    val field2Validator: Validator[Foo, String] = id[Foo].map(_.field2) >> labeled("field2") {
+      required << minLength(3)
+    }
 
-    val field3Validator: Validator[Bar, List[FooValid]] = labeled("field3") {
-      valid[Foo, FooValid].list.optional.map(_.getOrElse(List.empty))
-    }.contraMap[Bar](_.field3)
+    val field3Validator: Validator[Foo, Option[String]] = labeled("field3") {
+      id << maxLength(3).optional
+    }.contraMap[Foo](_.field3)
 
     validateWith(
       field1Validator,
       field2Validator,
       field3Validator,
-    )(BarValid.apply)
+    )(FooValid.apply)
   }
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = {
-    val foo1 = Foo(field1 = Some("aA1"), field2 = Some("a1"), field3 = Some(18))
-    val foo2 = Foo(field1 = Some("aA1"), field2 = Some("a1"), field3 = Some(18))
-    val foo3 = Foo(field1 = Some("aA1"), field2 = Some("a1"), field3 = Some(18))
-    val foo4 = Foo(field1 = Some("aA1"), field2 = Some("a1"), field3 = Some(18))
-    val bar  = Bar(
-      field1 = Some(foo1),
-      field2 = Some(foo2),
-      field3 = Some(List(foo3, foo4)),
+    val foo = Foo(
+      field1 = Some("foo"),
+      field2 = Some("foo"),
+      field3 = Some("foo"),
     )
 
     for {
-      barValid <- Validator.validateZIO(ValidationException.apply)(bar).exit
-      _        <- ZIO.log(s"barValid: $barValid")
+      fooValid <- Validator.validateZIO(ValidationException.apply)(foo).exit
+      _        <- ZIO.log(s"fooValid: $fooValid")
     } yield ()
   }
 }
