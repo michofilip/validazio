@@ -19,7 +19,7 @@ trait Validator[In, Out] {
 }
 
 object Validator {
-  def validateZIO[In, Err: Associative, Out](f: String => Err)(value: In)(using Validator[In, Out]): IO[Err, Out] = {
+  def validateZIO[In, Err: Associative, Out](f: String => Err)(value: In): Validator[In, Out] ?=> IO[Err, Out] = {
     valid.validate(value).mapError(f).toZIOAssociative
   }
 
@@ -32,13 +32,13 @@ object Validator {
   def id[T]: Validator[T, T] =
     Id()
 
-  def required[T](using Label): Validator[Option[T], T] =
+  def required[T]: Label ?=> Validator[Option[T], T] =
     Required(summon[Label].label)
 
   def condition[T](predicate: T => Boolean, description: String): Validator[T, T] =
     Condition(predicate, description)
 
-  def min[T: PartialOrd](min: T, inclusive: Boolean = true)(using Label): Validator[T, T] = {
+  def min[T: PartialOrd](min: T, inclusive: Boolean = true): Label ?=> Validator[T, T] = {
     condition(
       predicate = value => if (inclusive) value >= min else value > min,
       description =
@@ -47,7 +47,7 @@ object Validator {
     )
   }
 
-  def max[T: PartialOrd](max: T, inclusive: Boolean = true)(using Label): Validator[T, T] =
+  def max[T: PartialOrd](max: T, inclusive: Boolean = true): Label ?=> Validator[T, T] =
     condition(
       predicate = value => if (inclusive) value <= max else value < max,
       description =
@@ -55,19 +55,19 @@ object Validator {
         else s"${summon[Label].label} must be less then $max",
     )
 
-  def notEmpty(using Label): Validator[String, String] =
+  def notEmpty: Label ?=> Validator[String, String] =
     condition(
       predicate = _.nonEmpty,
       description = s"${summon[Label].label} must not be empty",
     )
 
-  def notBlank(using Label): Validator[String, String] =
+  def notBlank: Label ?=> Validator[String, String] =
     condition(
       predicate = value => !value.isBlank,
       description = s"${summon[Label].label} must not be blank",
     )
 
-  def minLength(minLength: Int, inclusive: Boolean = true)(using Label): Validator[String, String] =
+  def minLength(minLength: Int, inclusive: Boolean = true): Label ?=> Validator[String, String] =
     condition(
       predicate = value => if (inclusive) value.length >= minLength else value.length > minLength,
       description =
@@ -75,7 +75,7 @@ object Validator {
         else s"${summon[Label].label} length must be longer then $minLength",
     )
 
-  def maxLength[T: PartialOrd](maxLength: Int, inclusive: Boolean = true)(using Label): Validator[String, String] =
+  def maxLength[T: PartialOrd](maxLength: Int, inclusive: Boolean = true): Label ?=> Validator[String, String] =
     condition(
       predicate = value => if (inclusive) value.length <= maxLength else value.length < maxLength,
       description =
@@ -83,7 +83,7 @@ object Validator {
         else s"${summon[Label].label} length must be shorter then $maxLength",
     )
 
-  def regExr(regex: String, description: String)(using Label): Validator[String, String] =
+  def regExr(regex: String, description: String): Label ?=> Validator[String, String] =
     condition(
       predicate = regex.r.findFirstMatchIn(_).isDefined,
       description = s"${summon[Label].label} $description",
@@ -95,7 +95,7 @@ object Validator {
   def allDiscard[In](validators: Validator[In, ?]*): Validator[In, Unit] =
     ValidateAll(validators.toList.map(_.unit)).unit
 
-  def valid[In, Out](using Validator[In, Out]): Validator[In, Out] =
+  def valid[In, Out]: Validator[In, Out] ?=> Validator[In, Out] =
     summon[Validator[In, Out]]
 
   def validateWith[In, Out1, Out2, Out](
