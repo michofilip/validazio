@@ -1,6 +1,6 @@
 package validazio
 
-import validazio.Validator.*
+import validazio.*
 import zio.*
 
 object Example04 extends ZIOAppDefault {

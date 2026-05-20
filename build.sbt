@@ -13,13 +13,13 @@ val dependencies = Seq[ModuleID](
 
 lazy val root = (project in file("."))
   .settings(
-    name           := "validazio",
+    name           := "validazio-root",
     publish / skip := true,
   )
   .aggregate(core, examples)
 
 lazy val core = project.settings(
-  name := "validazio-core",
+  name := "validazio",
   libraryDependencies ++= dependencies,
 )
 

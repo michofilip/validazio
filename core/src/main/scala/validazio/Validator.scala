@@ -4,6 +4,8 @@ import validazio.Validator.*
 import zio.*
 import zio.prelude.*
 
+export Validator.*
+
 trait Validator[In, Out] {
   def validate(value: In): Validation[String, Out]
 
@@ -22,8 +24,6 @@ object Validator {
   def validateZIO[In, Err: Associative, Out](f: String => Err)(value: In): Validator[In, Out] ?=> IO[Err, Out] = {
     valid.validate(value).mapError(f).toZIOAssociative
   }
-
-  case class Label(label: String)
 
   def labeled[In, Out](label: String)(validator: Label ?=> Validator[In, Out]): Validator[In, Out] = {
     validator(using Label(label))
