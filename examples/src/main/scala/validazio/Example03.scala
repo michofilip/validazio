@@ -46,11 +46,11 @@ object Example03 extends ZIOAppDefault {
       valid[Child, ChildValid].list.optional.map(_.getOrElse(List.empty))
     }.contraMap[Parent](_.children)
 
-    validateWith(
-      requiredChildValidator,
-      optionalChildValidator,
-      childrenValidator,
-    )(ParentValid.apply)
+    (
+      requiredChildValidator
+        ++ optionalChildValidator
+        ++ childrenValidator
+    ).map(ParentValid.apply)
   }
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = {

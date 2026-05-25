@@ -27,14 +27,14 @@ object Example02 extends ZIOAppDefault {
     }
 
     val field3Validator: Validator[Foo, Option[String]] = labeled("field3") {
-      id << maxLength(3).optional
+      id << minLength(3).optional
     }.contraMap[Foo](_.field3)
 
-    validateWith(
-      field1Validator,
-      field2Validator,
-      field3Validator,
-    )(FooValid.apply)
+    (
+      field1Validator
+        ++ field2Validator
+        ++ field3Validator
+    ).map(FooValid.apply)
   }
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = {
