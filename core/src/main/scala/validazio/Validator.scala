@@ -4,7 +4,7 @@ import validazio.Validator.*
 import zio.*
 import zio.prelude.*
 
-trait Validator[In, Out] { self =>
+trait Validator[In, Out] {
   def validate(value: In): Validation[String, Out]
 
   final def optional: Validator[Option[In], Option[Out]] =
@@ -43,6 +43,12 @@ trait Validator[In, Out] { self =>
       validator: Validator[In, Out2],
   )(using zippable: Zippable[Out, Out2]): Validator[In, zippable.Out] =
     this.zip(validator)
+
+  final def when(predicate: => Boolean): Validator[In, Option[Out]] =
+    When(this, predicate)
+
+  final def unless(predicate: => Boolean): Validator[In, Option[Out]] =
+    when(!predicate)
 }
 
 object Validator {
@@ -117,6 +123,14 @@ object Validator {
     override def validate(value: In): Validation[String, Out] = {
       validator1.validate(value).zipWithPar(validator2.validate(value))(f)
     }
+  }
+
+  private[validazio] case class When[In, Out](
+      private val validator: Validator[In, Out],
+      private val predicate: Boolean,
+  ) extends Validator[In, Option[Out]] {
+    override def validate(value: In): Validation[String, Option[Out]] =
+      if (predicate) validator.validate(value).map(Some.apply) else Validation.succeed(None)
   }
 
 }
