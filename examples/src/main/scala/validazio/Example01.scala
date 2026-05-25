@@ -26,6 +26,7 @@ object Example01 extends ZIOAppDefault {
         regExr("[a-z]", "must contain a lowercase character"),
         regExr("[A-Z]", "must contain an uppercase character"),
         regExr("[0-9]", "must contain a digit"),
+        regExr("[@#$%&_]", "must contain a special character"),
         regExr("^\\S*$", "must not contain a whitespace character"),
       )
     }.contraMap(_.password)
@@ -47,7 +48,7 @@ object Example01 extends ZIOAppDefault {
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = {
     val user = User(
       username = "username",
-      password = "paZZw0rd",
+      password = "Pa$$w0rd",
       age = 20,
     )
 
@@ -58,9 +59,9 @@ object Example01 extends ZIOAppDefault {
     )
 
     for {
-      user          <- Validator.validateZIO(ValidationException.apply)(user).exit
+      user          <- validateZIO(ValidationException.apply)(user).exit
       _             <- ZIO.log(s"user: $user")
-      userIncorrect <- Validator.validateZIO(ValidationException.apply)(userIncorrect).exit
+      userIncorrect <- validateZIO(ValidationException.apply)(userIncorrect).exit
       _             <- ZIO.log(s"userIncorrect: $userIncorrect")
     } yield ()
   }

@@ -27,9 +27,9 @@ object Example04 extends ZIOAppDefault {
     )
 
     for {
-      mol          <- Validator.validateZIO(ValidationException.apply)(mol).exit
+      mol          <- validateZIO(ValidationException.apply)(mol).exit
       _            <- ZIO.log(s"mol: $mol")
-      molIncorrect <- Validator.validateZIO(ValidationException.apply)(molIncorrect).exit
+      molIncorrect <- validateZIO(ValidationException.apply)(molIncorrect).exit
       _            <- ZIO.log(s"molIncorrect: $molIncorrect")
     } yield ()
   }
