@@ -42,7 +42,7 @@ trait Validator[In, Out] {
   final def ++[Out2](
       validator: Validator[In, Out2],
   )(using zippable: Zippable[Out, Out2]): Validator[In, zippable.Out] =
-    this.zip(validator)
+    zip(validator)
 
   final def when(predicate: => Boolean): Validator[In, Option[Out]] =
     When(this, predicate)
