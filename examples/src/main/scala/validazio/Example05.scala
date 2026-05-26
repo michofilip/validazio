@@ -12,7 +12,7 @@ object Example05 extends ZIOAppDefault {
       field2: Option[String] = None,
   )
 
-  given Validator[Foo, Foo] = {
+  private def fooValidator(environment: String): Validator[Foo, Foo] = {
     val field1Validator: Validator[Foo, Option[String]] = labeled("field1") {
       required.when(environment == "TEST")
     }.contraMap[Foo](_.field1)
@@ -26,6 +26,8 @@ object Example05 extends ZIOAppDefault {
       field2Validator,
     )
   }
+
+  given Validator[Foo, Foo] = fooValidator(environment)
 
   override def run: ZIO[ZIOAppArgs & Scope, Any, Any] = {
     val foo = Foo(
