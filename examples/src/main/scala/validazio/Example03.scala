@@ -24,13 +24,15 @@ object Example03 extends ZIOAppDefault {
   case class Parent(
       requiredChild: Option[Child] = None,
       optionalChild: Option[Child] = None,
-      children: Option[List[Child]] = None,
+      listOfChildren: Option[List[Child]] = None,
+      setOfChildren: Option[Set[Child]] = None,
   )
 
   case class ParentValid(
       requiredChild: ChildValid,
       optionalChild: Option[ChildValid],
-      children: List[ChildValid],
+      listOfChildren: List[ChildValid],
+      setOfChildren: Set[ChildValid],
   )
 
   given Validator[Parent, ParentValid] = {
@@ -42,14 +44,19 @@ object Example03 extends ZIOAppDefault {
       valid[Child, ChildValid].optional
     }.contraMap[Parent](_.optionalChild)
 
-    val childrenValidator: Validator[Parent, List[ChildValid]] = labeled("children") {
-      valid[Child, ChildValid].list.optional.map(_.getOrElse(List.empty))
-    }.contraMap[Parent](_.children)
+    val listOfChildrenValidator: Validator[Parent, List[ChildValid]] = labeled("listOfChildren") {
+      valid[Child, ChildValid].list.optional.map(_.getOrElse(List.empty)) >> minSize(2)
+    }.contraMap[Parent](_.listOfChildren)
+
+    val setOfChildrenValidator: Validator[Parent, Set[ChildValid]] = labeled("setOfChildren") {
+      (valid[Child, ChildValid].set >> minSetSize(2)).optional.map(_.getOrElse(Set.empty))
+    }.contraMap[Parent](_.setOfChildren)
 
     (
       requiredChildValidator
         ++ optionalChildValidator
-        ++ childrenValidator
+        ++ listOfChildrenValidator
+        ++ setOfChildrenValidator
     ).map(ParentValid.apply)
   }
 
@@ -61,7 +68,8 @@ object Example03 extends ZIOAppDefault {
     val parent = Parent(
       requiredChild = Some(child1),
       optionalChild = Some(child2),
-      children = Some(List(child3, child4)),
+      listOfChildren = Some(List(child3, child4)),
+      setOfChildren = Some(Set(child3, child4)),
     )
 
     for {

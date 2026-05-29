@@ -9,6 +9,7 @@ object Example01 extends ZIOAppDefault {
       username: String,
       password: String,
       age: Int,
+      accepted: Boolean,
   )
 
   given Validator[User, User] = {
@@ -38,10 +39,15 @@ object Example01 extends ZIOAppDefault {
       )
     }.contraMap(_.age)
 
+    val acceptedValidator: Validator[User, Unit] = labeled("accepted") {
+      isTrue.unit
+    }.contraMap(_.accepted)
+
     id << allDiscard(
       usernameValidator,
       passwordValidator,
       ageValidator,
+      acceptedValidator,
     )
   }
 
@@ -50,12 +56,14 @@ object Example01 extends ZIOAppDefault {
       username = "username",
       password = "Pa$$w0rd",
       age = 20,
+      accepted = true,
     )
 
     val userIncorrect = User(
       username = "",
       password = "",
       age = 0,
+      accepted = false,
     )
 
     for {

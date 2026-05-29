@@ -13,6 +13,9 @@ trait Validator[In, Out] {
   final def list: Validator[List[In], List[Out]] =
     ValidateForEach(this)
 
+  final def set: Validator[Set[In], Set[Out]] =
+    list.map(_.toSet).contraMap(_.toList)
+
   final def map[Out2](f: Out => Out2): Validator[In, Out2] =
     Map(this, f)
 

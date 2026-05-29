@@ -21,6 +21,18 @@ def required[T]: Label ?=> Validator[Option[T], T] =
 def condition[T](predicate: T => Boolean, description: String): Validator[T, T] =
   Condition(predicate, description)
 
+def isTrue: Label ?=> Validator[Boolean, Boolean] =
+  condition(
+    predicate = _ == true,
+    description = s"${summon[Label].label} must be true",
+  )
+
+def isFalse: Label ?=> Validator[Boolean, Boolean] =
+  condition(
+    predicate = _ == false,
+    description = s"${summon[Label].label} must be false",
+  )
+
 def min[T: PartialOrd](min: T, inclusive: Boolean = true): Label ?=> Validator[T, T] = {
   condition(
     predicate = value => if (inclusive) value >= min else value > min,
@@ -36,6 +48,38 @@ def max[T: PartialOrd](max: T, inclusive: Boolean = true): Label ?=> Validator[T
     description =
       if (inclusive) s"${summon[Label].label} must be less then or equal to $max"
       else s"${summon[Label].label} must be less then $max",
+  )
+
+def minSize[T <: Seq[?]](minSize: Int, inclusive: Boolean = true): Label ?=> Validator[T, T] =
+  condition(
+    predicate = value => if (inclusive) value.size >= minSize else value.size > minSize,
+    description =
+      if (inclusive) s"${summon[Label].label} size must be more then or equal to $minSize"
+      else s"${summon[Label].label} size must be more then $minSize",
+  )
+
+def maxSize[T <: Seq[?]](maxSize: Int, inclusive: Boolean = true): Label ?=> Validator[T, T] =
+  condition(
+    predicate = value => if (inclusive) value.size <= maxSize else value.size < maxSize,
+    description =
+      if (inclusive) s"${summon[Label].label} size must be less then or equal to $maxSize"
+      else s"${summon[Label].label} size must be less then $maxSize",
+  )
+
+def minSetSize[T <: Set[?]](minSize: Int, inclusive: Boolean = true): Label ?=> Validator[T, T] =
+  condition(
+    predicate = value => if (inclusive) value.size >= minSize else value.size > minSize,
+    description =
+      if (inclusive) s"${summon[Label].label} size must be more then or equal to $minSize"
+      else s"${summon[Label].label} size must be more then $minSize",
+  )
+
+def maxSetSize[T <: Set[?]](maxSize: Int, inclusive: Boolean = true): Label ?=> Validator[T, T] =
+  condition(
+    predicate = value => if (inclusive) value.size <= maxSize else value.size < maxSize,
+    description =
+      if (inclusive) s"${summon[Label].label} size must be less then or equal to $maxSize"
+      else s"${summon[Label].label} size must be less then $maxSize",
   )
 
 def notEmpty: Label ?=> Validator[String, String] =
