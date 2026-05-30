@@ -4,13 +4,11 @@ import validazio.Validator.*
 import zio.IO
 import zio.prelude.{Associative, PartialOrd, PartialOrdOps}
 
-def validateZIO[In, Err: Associative, Out](f: String => Err)(value: In): Validator[In, Out] ?=> IO[Err, Out] = {
+def validateZIO[In, Err: Associative, Out](f: String => Err)(value: In): Validator[In, Out] ?=> IO[Err, Out] =
   valid.validate(value).mapError(f).toZIOAssociative
-}
 
-def labeled[In, Out](label: String)(validator: Label ?=> Validator[In, Out]): Validator[In, Out] = {
+def labeled[In, Out](label: String)(validator: Label ?=> Validator[In, Out]): Validator[In, Out] =
   validator(using Label(label))
-}
 
 def id[T]: Validator[T, T] =
   Id()
@@ -23,24 +21,23 @@ def condition[T](predicate: T => Boolean, description: String): Validator[T, T] 
 
 def isTrue: Label ?=> Validator[Boolean, Boolean] =
   condition(
-    predicate = _ == true,
+    predicate = identity,
     description = s"${summon[Label].label} must be true",
   )
 
 def isFalse: Label ?=> Validator[Boolean, Boolean] =
   condition(
-    predicate = _ == false,
+    predicate = !_,
     description = s"${summon[Label].label} must be false",
   )
 
-def min[T: PartialOrd](min: T, inclusive: Boolean = true): Label ?=> Validator[T, T] = {
+def min[T: PartialOrd](min: T, inclusive: Boolean = true): Label ?=> Validator[T, T] =
   condition(
     predicate = value => if (inclusive) value >= min else value > min,
     description =
       if (inclusive) s"${summon[Label].label} must be more then or equal to $min"
       else s"${summon[Label].label} must be more then $min",
   )
-}
 
 def max[T: PartialOrd](max: T, inclusive: Boolean = true): Label ?=> Validator[T, T] =
   condition(

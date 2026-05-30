@@ -7,15 +7,6 @@ import zio.prelude.*
 trait Validator[In, Out] {
   def validate(value: In): Validation[String, Out]
 
-  final def optional: Validator[Option[In], Option[Out]] =
-    ValidateForEach(this)
-
-  final def list: Validator[List[In], List[Out]] =
-    ValidateForEach(this)
-
-  final def set: Validator[Set[In], Set[Out]] =
-    list.map(_.toSet).contraMap(_.toList)
-
   final def map[Out2](f: Out => Out2): Validator[In, Out2] =
     Map(this, f)
 
@@ -33,6 +24,15 @@ trait Validator[In, Out] {
 
   final def <<[Out2](validator: Validator[Out, Out2]): Validator[In, Out] =
     tap(validator)
+
+  final def optional: Validator[Option[In], Option[Out]] =
+    ValidateForEach(this)
+
+  final def list: Validator[List[In], List[Out]] =
+    ValidateForEach(this)
+
+  final def set: Validator[Set[In], Set[Out]] =
+    list.map(_.toSet).contraMap(_.toList)
 
   final def unit: Validator[In, Unit] =
     map(_ => ())
