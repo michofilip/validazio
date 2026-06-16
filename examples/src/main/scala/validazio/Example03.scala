@@ -26,6 +26,7 @@ object Example03 extends ZIOAppDefault {
       optionalChild: Option[Child] = None,
       listOfChildren: Option[List[Child]] = None,
       setOfChildren: Option[Set[Child]] = None,
+      mapOfChildren: Option[Map[String, Child]] = None,
   )
 
   case class ParentValid(
@@ -33,6 +34,7 @@ object Example03 extends ZIOAppDefault {
       optionalChild: Option[ChildValid],
       listOfChildren: List[ChildValid],
       setOfChildren: Set[ChildValid],
+      mapOfChildren: Map[String, ChildValid],
   )
 
   given Validator[Parent, ParentValid] = {
@@ -45,18 +47,23 @@ object Example03 extends ZIOAppDefault {
     }.contraMap[Parent](_.optionalChild)
 
     val listOfChildrenValidator: Validator[Parent, List[ChildValid]] = labeled("listOfChildren") {
-      valid[Child, ChildValid].list.optional.map(_.getOrElse(List.empty)) >> minSize(2)
+      valid[Child, ChildValid].list.optional.map(_.getOrElse(List.empty))
     }.contraMap[Parent](_.listOfChildren)
 
     val setOfChildrenValidator: Validator[Parent, Set[ChildValid]] = labeled("setOfChildren") {
-      (valid[Child, ChildValid].set >> minSetSize(2)).optional.map(_.getOrElse(Set.empty))
+      valid[Child, ChildValid].set.optional.map(_.getOrElse(Set.empty))
     }.contraMap[Parent](_.setOfChildren)
+
+    val mapOfChildrenValidator: Validator[Parent, Map[String, ChildValid]] = labeled("mapOfChildren") {
+      valid[Child, ChildValid].keyValuePairs[String].optional.map(_.getOrElse(Map.empty))
+    }.contraMap[Parent](_.mapOfChildren)
 
     (
       requiredChildValidator
         ++ optionalChildValidator
         ++ listOfChildrenValidator
         ++ setOfChildrenValidator
+        ++ mapOfChildrenValidator
     ).map(ParentValid.apply)
   }
 
@@ -70,6 +77,14 @@ object Example03 extends ZIOAppDefault {
       optionalChild = Some(child2),
       listOfChildren = Some(List(child3, child4)),
       setOfChildren = Some(Set(child3, child4)),
+      mapOfChildren = Some(
+        Map(
+          "Ala" -> child1,
+          "Ela" -> child2,
+          "Ola" -> child3,
+          "Ula" -> child4,
+        ),
+      ),
     )
 
     for {

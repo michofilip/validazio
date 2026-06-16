@@ -11,13 +11,13 @@ def labeled[In, Out](label: String)(validator: Label ?=> Validator[In, Out]): Va
   validator(using Label(label))
 
 def id[T]: Validator[T, T] =
-  Id()
+  IdValidator()
 
 def required[T]: Label ?=> Validator[Option[T], T] =
-  Required(summon[Label].label)
+  RequiredValidator(summon[Label].label)
 
 def condition[T](predicate: T => Boolean, description: String): Validator[T, T] =
-  Condition(predicate, description)
+  ConditionValidator(predicate, description)
 
 def isTrue: Label ?=> Validator[Boolean, Boolean] =
   condition(
@@ -114,10 +114,10 @@ def regExr(regex: String, description: String): Label ?=> Validator[String, Stri
   )
 
 def all[In, Out](validators: Validator[In, Out]*): Validator[In, List[Out]] =
-  ValidateAll(validators.toList)
+  AllValidator(validators.toList)
 
 def allDiscard[In](validators: Validator[In, ?]*): Validator[In, Unit] =
-  ValidateAll(validators.toList.map(_.unit)).unit
+  AllValidator(validators.toList.map(_.unit)).unit
 
 def valid[In, Out]: Validator[In, Out] ?=> Validator[In, Out] =
   summon[Validator[In, Out]]
