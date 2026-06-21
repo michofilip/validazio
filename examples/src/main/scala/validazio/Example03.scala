@@ -88,7 +88,7 @@ object Example03 extends ZIOAppDefault {
     )
 
     for {
-      parentValid <- validateZIO(ValidationException.apply)(parent).exit
+      parentValid <- validateZIOWithDefaultDescriptor(parent).exit
       _           <- ZIO.log(s"parentValid: $parentValid")
     } yield ()
   }

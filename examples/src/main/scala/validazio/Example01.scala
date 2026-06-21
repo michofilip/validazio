@@ -67,9 +67,9 @@ object Example01 extends ZIOAppDefault {
     )
 
     for {
-      user          <- validateZIO(ValidationException.apply)(user).exit
+      user          <- validateZIOWithDefaultDescriptor(user).exit
       _             <- ZIO.log(s"user: $user")
-      userIncorrect <- validateZIO(ValidationException.apply)(userIncorrect).exit
+      userIncorrect <- validateZIOWithDefaultDescriptor(userIncorrect).exit
       _             <- ZIO.log(s"userIncorrect: $userIncorrect")
     } yield ()
   }

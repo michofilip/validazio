@@ -45,7 +45,7 @@ object Example02 extends ZIOAppDefault {
     )
 
     for {
-      fooValid <- validateZIO(ValidationException.apply)(foo).exit
+      fooValid <- validateZIOWithDefaultDescriptor(foo).exit
       _        <- ZIO.log(s"fooValid: $fooValid")
     } yield ()
   }

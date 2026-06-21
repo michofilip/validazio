@@ -1,9 +1,6 @@
 package validazio
 
-import izumi.reflect.Tag
 import zio.prelude.PartialOrd
-
-import scala.reflect.ClassTag
 
 enum ValidationFailure {
   case Condition(description: String)

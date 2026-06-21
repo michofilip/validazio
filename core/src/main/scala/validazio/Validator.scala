@@ -38,7 +38,7 @@ sealed trait Validator[In, Out] {
     val keys   = id[Map[K, In]].map(_.keys)
     val values = list.contraMap[Map[K, In]](_.values.toList)
 
-    keys.zip(values).map { case (k, v) => k.zip(v).toMap }
+    (keys ++ values).map { case (k, v) => k.zip(v).toMap }
   }
 
   final def unit: Validator[In, Unit] =

@@ -15,7 +15,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[Int, Int] = id
 
             for {
-              res <- validateZIO(ValidationException.apply)(42).exit
+              res <- validateZIOWithDefaultDescriptor(42).exit
             } yield assertTrue {
               res == Exit.succeed(42)
             }
@@ -26,7 +26,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[Option[Int], Int] = required
 
             for {
-              res <- validateZIO(ValidationException.apply)(Option(42)).exit
+              res <- validateZIOWithDefaultDescriptor(Option(42)).exit
             } yield assertTrue {
               res == Exit.succeed(42)
             }
@@ -35,9 +35,9 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[Option[Int], Int] = required
 
             for {
-              res <- validateZIO(ValidationException.apply)(Option.empty[Int]).exit
+              res <- validateZIOWithDefaultDescriptor(Option.empty[Int]).exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value is required"))
+              res == Exit.fail(Chunk("value is required"))
             }
           },
         ),
@@ -46,7 +46,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[Int, Int] = condition(_ == 42, "must be 42")
 
             for {
-              res <- validateZIO(ValidationException.apply)(42).exit
+              res <- validateZIOWithDefaultDescriptor(42).exit
             } yield assertTrue {
               res == Exit.succeed(42)
             }
@@ -55,9 +55,9 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[Int, Int] = condition(_ == 42, "value must be 42")
 
             for {
-              res <- validateZIO(ValidationException.apply)(0).exit
+              res <- validateZIOWithDefaultDescriptor(0).exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value must be 42"))
+              res == Exit.fail(Chunk("value must be 42"))
             }
           },
         ),
@@ -67,7 +67,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = min(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(1).exit
+                res <- validateZIOWithDefaultDescriptor(1).exit
               } yield assertTrue {
                 res == Exit.succeed(1)
               }
@@ -76,7 +76,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = min(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(0).exit
+                res <- validateZIOWithDefaultDescriptor(0).exit
               } yield assertTrue {
                 res == Exit.succeed(0)
               }
@@ -85,9 +85,9 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = min(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(-1).exit
+                res <- validateZIOWithDefaultDescriptor(-1).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be more then or equal to 0"))
+                res == Exit.fail(Chunk("value must be more then or equal to 0"))
               }
             },
           ),
@@ -96,7 +96,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = min(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(1).exit
+                res <- validateZIOWithDefaultDescriptor(1).exit
               } yield assertTrue {
                 res == Exit.succeed(1)
               }
@@ -105,18 +105,18 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = min(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(0).exit
+                res <- validateZIOWithDefaultDescriptor(0).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be more then 0"))
+                res == Exit.fail(Chunk("value must be more then 0"))
               }
             },
             test("fails if value is smaller than min value") {
               given Validator[Int, Int] = min(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(-1).exit
+                res <- validateZIOWithDefaultDescriptor(-1).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be more then 0"))
+                res == Exit.fail(Chunk("value must be more then 0"))
               }
             },
           ),
@@ -127,7 +127,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = max(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(-1).exit
+                res <- validateZIOWithDefaultDescriptor(-1).exit
               } yield assertTrue {
                 res == Exit.succeed(-1)
               }
@@ -136,7 +136,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = max(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(0).exit
+                res <- validateZIOWithDefaultDescriptor(0).exit
               } yield assertTrue {
                 res == Exit.succeed(0)
               }
@@ -145,9 +145,9 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = max(0)
 
               for {
-                res <- validateZIO(ValidationException.apply)(1).exit
+                res <- validateZIOWithDefaultDescriptor(1).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be less then or equal to 0"))
+                res == Exit.fail(Chunk("value must be less then or equal to 0"))
               }
             },
           ),
@@ -156,7 +156,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = max(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(-1).exit
+                res <- validateZIOWithDefaultDescriptor(-1).exit
               } yield assertTrue {
                 res == Exit.succeed(-1)
               }
@@ -165,18 +165,18 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[Int, Int] = max(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(0).exit
+                res <- validateZIOWithDefaultDescriptor(0).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be less then 0"))
+                res == Exit.fail(Chunk("value must be less then 0"))
               }
             },
             test("fails if value is smaller than max value") {
               given Validator[Int, Int] = max(0, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)(1).exit
+                res <- validateZIOWithDefaultDescriptor(1).exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value must be less then 0"))
+                res == Exit.fail(Chunk("value must be less then 0"))
               }
             },
           ),
@@ -186,7 +186,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = notEmpty
 
             for {
-              res <- validateZIO(ValidationException.apply)("test").exit
+              res <- validateZIOWithDefaultDescriptor("test").exit
             } yield assertTrue {
               res == Exit.succeed("test")
             }
@@ -195,9 +195,9 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = notEmpty
 
             for {
-              res <- validateZIO(ValidationException.apply)("").exit
+              res <- validateZIOWithDefaultDescriptor("").exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value must not be empty"))
+              res == Exit.fail(Chunk("value must not be empty"))
             }
           },
         ),
@@ -206,7 +206,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = notBlank
 
             for {
-              res <- validateZIO(ValidationException.apply)("test").exit
+              res <- validateZIOWithDefaultDescriptor("test").exit
             } yield assertTrue {
               res == Exit.succeed("test")
             }
@@ -215,18 +215,18 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = notBlank
 
             for {
-              res <- validateZIO(ValidationException.apply)("   ").exit
+              res <- validateZIOWithDefaultDescriptor("   ").exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value must not be blank"))
+              res == Exit.fail(Chunk("value must not be blank"))
             }
           },
           test("fails if value is empty string") {
             given Validator[String, String] = notBlank
 
             for {
-              res <- validateZIO(ValidationException.apply)("").exit
+              res <- validateZIOWithDefaultDescriptor("").exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value must not be blank"))
+              res == Exit.fail(Chunk("value must not be blank"))
             }
           },
         ),
@@ -236,7 +236,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = minLength(3)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -245,7 +245,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = minLength(4)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -254,9 +254,9 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = minLength(5)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be longer then or equal to 5"))
+                res == Exit.fail(Chunk("value length must be longer then or equal to 5"))
               }
             },
           ),
@@ -265,7 +265,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = minLength(3, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -274,18 +274,18 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = minLength(4, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be longer then 4"))
+                res == Exit.fail(Chunk("value length must be longer then 4"))
               }
             },
             test("fails if value is a string with length smaller than min length") {
               given Validator[String, String] = minLength(5, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be longer then 5"))
+                res == Exit.fail(Chunk("value length must be longer then 5"))
               }
             },
           ),
@@ -296,7 +296,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = maxLength(5)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -305,7 +305,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = maxLength(4)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -314,9 +314,9 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = maxLength(3)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be shorter then or equal to 3"))
+                res == Exit.fail(Chunk("value length must be shorter then or equal to 3"))
               }
             },
           ),
@@ -325,7 +325,7 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = maxLength(5, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
                 res == Exit.succeed("test")
               }
@@ -334,18 +334,18 @@ object ValidatorSpec extends ZIOSpecDefault {
               given Validator[String, String] = maxLength(4, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be shorter then 4"))
+                res == Exit.fail(Chunk("value length must be shorter then 4"))
               }
             },
             test("fails if value is a string with length greater than max length") {
               given Validator[String, String] = maxLength(3, inclusive = false)
 
               for {
-                res <- validateZIO(ValidationException.apply)("test").exit
+                res <- validateZIOWithDefaultDescriptor("test").exit
               } yield assertTrue {
-                res == Exit.fail(ValidationException("value length must be shorter then 3"))
+                res == Exit.fail(Chunk("value length must be shorter then 3"))
               }
             },
           ),
@@ -355,7 +355,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = regExr("[0-9]", "must contain a digit")
 
             for {
-              res <- validateZIO(ValidationException.apply)("test1").exit
+              res <- validateZIOWithDefaultDescriptor("test1").exit
             } yield assertTrue {
               res == Exit.succeed("test1")
             }
@@ -364,9 +364,9 @@ object ValidatorSpec extends ZIOSpecDefault {
             given Validator[String, String] = regExr("[0-9]", "must contain a digit")
 
             for {
-              res <- validateZIO(ValidationException.apply)("test").exit
+              res <- validateZIOWithDefaultDescriptor("test").exit
             } yield assertTrue {
-              res == Exit.fail(ValidationException("value must contain a digit"))
+              res == Exit.fail(Chunk("value must contain a digit"))
             }
           },
         ),
@@ -379,7 +379,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             )
 
             for {
-              res <- validateZIO(ValidationException.apply)("Test1").exit
+              res <- validateZIOWithDefaultDescriptor("Test1").exit
             } yield assertTrue {
               res == Exit.succeed(List("Test1", "Test1", "Test1"))
             }
@@ -392,14 +392,12 @@ object ValidatorSpec extends ZIOSpecDefault {
             )
 
             for {
-              res <- validateZIO(ValidationException.apply)("test").exit
+              res <- validateZIOWithDefaultDescriptor("test").exit
             } yield assertTrue {
               res == Exit.fail(
-                ValidationException(
-                  List(
-                    "value must contain an uppercase character",
-                    "value must contain a digit",
-                  ),
+                Chunk(
+                  "value must contain an uppercase character",
+                  "value must contain a digit",
                 ),
               )
             }
@@ -414,7 +412,7 @@ object ValidatorSpec extends ZIOSpecDefault {
             )
 
             for {
-              res <- validateZIO(ValidationException.apply)("Test1").exit
+              res <- validateZIOWithDefaultDescriptor("Test1").exit
             } yield assertTrue {
               res == Exit.succeed(())
             }
@@ -427,14 +425,12 @@ object ValidatorSpec extends ZIOSpecDefault {
             )
 
             for {
-              res <- validateZIO(ValidationException.apply)("test").exit
+              res <- validateZIOWithDefaultDescriptor("test").exit
             } yield assertTrue {
               res == Exit.fail(
-                ValidationException(
-                  List(
-                    "value must contain an uppercase character",
-                    "value must contain a digit",
-                  ),
+                Chunk(
+                  "value must contain an uppercase character",
+                  "value must contain a digit",
                 ),
               )
             }
